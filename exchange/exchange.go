@@ -2,25 +2,32 @@ package exchange
 
 import "sync"
 
-type Exchange struct {
+type ExchangeT[T any] struct {
 	m sync.Map
 }
 
-func (e *Exchange) Register(key string, buf int) {
-	if _, ok := e.m.Load(key); ok {
-		return
+func NewExchange[T any]() *ExchangeT[T] {
+	return &ExchangeT[T]{
+		m: sync.Map{},
 	}
-	e.m.Store(key, NewChannel(buf))
 }
 
-func (e *Exchange) Unregister(key string) {
+func (e *ExchangeT[T]) Register(key string, buf int) bool {
+	if _, ok := e.m.Load(key); ok {
+		return false
+	}
+	e.m.Store(key, NewChannel[T](buf))
+	return true
+}
+
+func (e *ExchangeT[T]) Unregister(key string) {
 	e.m.Delete(key)
 }
 
-func (e *Exchange) GetCh(key string) (*Channel, bool) {
+func (e *ExchangeT[T]) GetCh(key string) (*ChannelT[T], bool) {
 	ch, ok := e.m.Load(key)
 	if !ok || ch == nil {
 		return nil, false
 	}
-	return ch.(*Channel), true
+	return ch.(*ChannelT[T]), true
 }

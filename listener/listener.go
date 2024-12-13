@@ -28,13 +28,3 @@ func OnAccept(listener net.Listener, handler func(conn net.Conn)) {
 		}
 	}()
 }
-
-// Protocol
-// <- bytes[0] 0/1 create/register
-//    bytes[1] key
-//    bytes[N] \0
-// -> bytes[0] 1/2 ok/error
-//    bytes[1+] data
-//    bytes[N] \0
-// 
-//

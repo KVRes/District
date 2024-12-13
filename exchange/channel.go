@@ -1,23 +1,20 @@
 package exchange
 
-import (
-	"net"
-	"sync"
-)
-
-type Channel struct {
-	ch       chan []byte
-	listener []net.Listener
-	l_lck    sync.RWMutex
+type ChannelT[T any] struct {
+	ch chan T
+	// listener []net.Listener
+	// l_lck    sync.RWMutex
 }
 
-func (c *Channel) AddListener(listener net.Listener) {
+/*
+
+func (c *ChannelT[T]) AddListener(listener net.Listener) {
 	c.l_lck.Lock()
 	defer c.l_lck.Unlock()
 	c.listener = append(c.listener, listener)
 }
 
-func (c *Channel) RemoveListener(listener net.Listener) {
+func (c *ChannelT[T]) RemoveListener(listener net.Listener) {
 	c.l_lck.Lock()
 	defer c.l_lck.Unlock()
 	for i, l := range c.listener {
@@ -28,22 +25,31 @@ func (c *Channel) RemoveListener(listener net.Listener) {
 	}
 }
 
-func (c *Channel) AllListener() []net.Listener {
+func (c *ChannelT[T]) AllListener() []net.Listener {
 	c.l_lck.RLock()
 	defer c.l_lck.RUnlock()
 	return c.listener
 }
+*/
 
-func NewChannel(buf int) *Channel {
-	return &Channel{
-		ch: make(chan []byte, buf),
+func NewChannel[T any](buf int) *ChannelT[T] {
+	return &ChannelT[T]{
+		ch: make(chan T, buf),
 	}
 }
 
-func (c *Channel) Send(msg []byte) {
+func (c *ChannelT[T]) Send(msg T) {
 	c.ch <- msg
 }
 
-func (c *Channel) Recv() []byte {
+func (c *ChannelT[T]) Recv() T {
 	return <-c.ch
+}
+
+func (c *ChannelT[T]) Len() int {
+	return len(c.ch)
+}
+
+func (c *ChannelT[T]) Cap() int {
+	return cap(c.ch)
 }

@@ -1,0 +1,50 @@
+syntax = "proto3";
+package ChannelService;
+option go_package = "./rpc";
+
+message RegisterChannelRequest {
+    string namespace = 1;
+    int32 buf = 2;
+}
+
+message InfoRequest {
+    string namespace = 1;
+}
+
+message InfoResponse {
+    bool is_register = 1;
+    int32 buf = 2;
+    int32 len = 3;
+}
+
+message RegisterChannelResponse {
+    bool existed = 1;
+}
+
+message SendMessageRequest {
+    string namespace = 1;
+    string msg = 2;
+}
+
+message SendMessageResponse {
+}
+
+message ReceiveMessageRequest {
+    string namespace = 1;
+}
+
+message ReceiveMessageResponse {
+    string msg = 1;
+}
+
+service ChannelService {
+    rpc Info(InfoRequest) returns (InfoResponse);
+    rpc RegisterChannel(RegisterChannelRequest) returns (RegisterChannelResponse);
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);                     // 乐观写
+    rpc SendMessagePessimistic(SendMessageRequest) returns (stream SendMessageResponse);   // 悲观写
+    rpc SendMessageStream(stream SendMessageRequest) returns (stream SendMessageResponse); // 写入流
+
+    rpc ReceiveMessage(ReceiveMessageRequest) returns (stream ReceiveMessageResponse);              // 悲观读
+    rpc ReceiveMessageOptimistic(ReceiveMessageRequest) returns (ReceiveMessageResponse);          // 乐观读
+    rpc ReceiveMessageStream(stream ReceiveMessageRequest) returns (stream ReceiveMessageResponse); // 读取流
+}
