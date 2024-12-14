@@ -12,11 +12,11 @@ func NewExchange[T any]() *ExchangeT[T] {
 	}
 }
 
-func (e *ExchangeT[T]) Register(key string, buf int) bool {
+func (e *ExchangeT[T]) Register(key string, meta ChMeta) bool {
 	if _, ok := e.m.Load(key); ok {
 		return false
 	}
-	e.m.Store(key, NewChannel[T](buf))
+	e.m.Store(key, NewChannel[T](meta))
 	return true
 }
 

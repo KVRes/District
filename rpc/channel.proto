@@ -17,6 +17,7 @@ message InfoResponse {
     bool is_register = 1;
     int32 buf = 2;
     int32 len = 3;
+    int32 flags = 4;
 }
 
 message RegisterChannelResponse {

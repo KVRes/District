@@ -28,11 +28,17 @@ func (s *Server) Info(_ context.Context, req *rpc.InfoRequest) (*rpc.InfoRespons
 		IsRegister: true,
 		Buf:        int32(ch.Cap()),
 		Len:        int32(ch.Len()),
+		Flags:      ch.Meta().Flags,
 	}, nil
 }
 
 func (s *Server) RegisterChannel(_ context.Context, req *rpc.RegisterChannelRequest) (*rpc.RegisterChannelResponse, error) {
-	existed := s.ex.Register(req.GetNamespace(), int(req.GetBuf()))
+	meta := exchange.ChMeta{
+		Buf:   int(req.GetBuf()),
+		Flags: req.GetFlags(),
+	}
+
+	existed := s.ex.Register(req.GetNamespace(), meta)
 	return &rpc.RegisterChannelResponse{
 		Existed: existed,
 	}, nil

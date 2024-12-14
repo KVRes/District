@@ -1,41 +1,24 @@
 package exchange
 
+type ChMeta struct {
+	Flags int32
+	Buf   int
+}
+
 type ChannelT[T any] struct {
-	ch chan T
-	// listener []net.Listener
-	// l_lck    sync.RWMutex
+	meta ChMeta
+	ch   chan T
 }
 
-/*
-
-func (c *ChannelT[T]) AddListener(listener net.Listener) {
-	c.l_lck.Lock()
-	defer c.l_lck.Unlock()
-	c.listener = append(c.listener, listener)
-}
-
-func (c *ChannelT[T]) RemoveListener(listener net.Listener) {
-	c.l_lck.Lock()
-	defer c.l_lck.Unlock()
-	for i, l := range c.listener {
-		if l == listener {
-			c.listener = append(c.listener[:i], c.listener[i+1:]...)
-			break
-		}
-	}
-}
-
-func (c *ChannelT[T]) AllListener() []net.Listener {
-	c.l_lck.RLock()
-	defer c.l_lck.RUnlock()
-	return c.listener
-}
-*/
-
-func NewChannel[T any](buf int) *ChannelT[T] {
+func NewChannel[T any](meta ChMeta) *ChannelT[T] {
 	return &ChannelT[T]{
-		ch: make(chan T, buf),
+		meta: meta,
+		ch:   make(chan T, meta.Buf),
 	}
+}
+
+func (c *ChannelT[T]) Meta() ChMeta {
+	return c.meta
 }
 
 func (c *ChannelT[T]) Send(msg T) {
