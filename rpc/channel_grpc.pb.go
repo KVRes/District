@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChannelService_Info_FullMethodName                     = "/ChannelService.ChannelService/Info"
-	ChannelService_RegisterChannel_FullMethodName          = "/ChannelService.ChannelService/RegisterChannel"
-	ChannelService_SendMessage_FullMethodName              = "/ChannelService.ChannelService/SendMessage"
-	ChannelService_SendMessagePessimistic_FullMethodName   = "/ChannelService.ChannelService/SendMessagePessimistic"
-	ChannelService_SendMessageStream_FullMethodName        = "/ChannelService.ChannelService/SendMessageStream"
-	ChannelService_ReceiveMessage_FullMethodName           = "/ChannelService.ChannelService/ReceiveMessage"
-	ChannelService_ReceiveMessageOptimistic_FullMethodName = "/ChannelService.ChannelService/ReceiveMessageOptimistic"
-	ChannelService_ReceiveMessageStream_FullMethodName     = "/ChannelService.ChannelService/ReceiveMessageStream"
+	ChannelService_Info_FullMethodName                      = "/ChannelService.ChannelService/Info"
+	ChannelService_RegisterChannel_FullMethodName           = "/ChannelService.ChannelService/RegisterChannel"
+	ChannelService_SendMessage_FullMethodName               = "/ChannelService.ChannelService/SendMessage"
+	ChannelService_SendMessageOptimistic_FullMethodName     = "/ChannelService.ChannelService/SendMessageOptimistic"
+	ChannelService_SendMessagePessimistic_FullMethodName    = "/ChannelService.ChannelService/SendMessagePessimistic"
+	ChannelService_SendMessageStream_FullMethodName         = "/ChannelService.ChannelService/SendMessageStream"
+	ChannelService_ReceiveMessage_FullMethodName            = "/ChannelService.ChannelService/ReceiveMessage"
+	ChannelService_ReceiveMessageOptimistic_FullMethodName  = "/ChannelService.ChannelService/ReceiveMessageOptimistic"
+	ChannelService_ReceiveMessagePessimistic_FullMethodName = "/ChannelService.ChannelService/ReceiveMessagePessimistic"
+	ChannelService_ReceiveMessageStream_FullMethodName      = "/ChannelService.ChannelService/ReceiveMessageStream"
 )
 
 // ChannelServiceClient is the client API for ChannelService service.
@@ -36,10 +38,12 @@ type ChannelServiceClient interface {
 	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
 	RegisterChannel(ctx context.Context, in *RegisterChannelRequest, opts ...grpc.CallOption) (*RegisterChannelResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
+	SendMessageOptimistic(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 	SendMessagePessimistic(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SendMessageResponse], error)
 	SendMessageStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[SendMessageRequest, SendMessageResponse], error)
 	ReceiveMessage(ctx context.Context, in *ReceiveMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ReceiveMessageResponse], error)
 	ReceiveMessageOptimistic(ctx context.Context, in *ReceiveMessageRequest, opts ...grpc.CallOption) (*ReceiveMessageResponse, error)
+	ReceiveMessagePessimistic(ctx context.Context, in *ReceiveMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ReceiveMessageResponse], error)
 	ReceiveMessageStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ReceiveMessageRequest, ReceiveMessageResponse], error)
 }
 
@@ -75,6 +79,16 @@ func (c *channelServiceClient) SendMessage(ctx context.Context, in *SendMessageR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SendMessageResponse)
 	err := c.cc.Invoke(ctx, ChannelService_SendMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *channelServiceClient) SendMessageOptimistic(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendMessageResponse)
+	err := c.cc.Invoke(ctx, ChannelService_SendMessageOptimistic_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,9 +156,28 @@ func (c *channelServiceClient) ReceiveMessageOptimistic(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *channelServiceClient) ReceiveMessagePessimistic(ctx context.Context, in *ReceiveMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ReceiveMessageResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &ChannelService_ServiceDesc.Streams[3], ChannelService_ReceiveMessagePessimistic_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ReceiveMessageRequest, ReceiveMessageResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ChannelService_ReceiveMessagePessimisticClient = grpc.ServerStreamingClient[ReceiveMessageResponse]
+
 func (c *channelServiceClient) ReceiveMessageStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ReceiveMessageRequest, ReceiveMessageResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ChannelService_ServiceDesc.Streams[3], ChannelService_ReceiveMessageStream_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &ChannelService_ServiceDesc.Streams[4], ChannelService_ReceiveMessageStream_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,10 +195,12 @@ type ChannelServiceServer interface {
 	Info(context.Context, *InfoRequest) (*InfoResponse, error)
 	RegisterChannel(context.Context, *RegisterChannelRequest) (*RegisterChannelResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
+	SendMessageOptimistic(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	SendMessagePessimistic(*SendMessageRequest, grpc.ServerStreamingServer[SendMessageResponse]) error
 	SendMessageStream(grpc.BidiStreamingServer[SendMessageRequest, SendMessageResponse]) error
 	ReceiveMessage(*ReceiveMessageRequest, grpc.ServerStreamingServer[ReceiveMessageResponse]) error
 	ReceiveMessageOptimistic(context.Context, *ReceiveMessageRequest) (*ReceiveMessageResponse, error)
+	ReceiveMessagePessimistic(*ReceiveMessageRequest, grpc.ServerStreamingServer[ReceiveMessageResponse]) error
 	ReceiveMessageStream(grpc.BidiStreamingServer[ReceiveMessageRequest, ReceiveMessageResponse]) error
 	mustEmbedUnimplementedChannelServiceServer()
 }
@@ -186,6 +221,9 @@ func (UnimplementedChannelServiceServer) RegisterChannel(context.Context, *Regis
 func (UnimplementedChannelServiceServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
+func (UnimplementedChannelServiceServer) SendMessageOptimistic(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessageOptimistic not implemented")
+}
 func (UnimplementedChannelServiceServer) SendMessagePessimistic(*SendMessageRequest, grpc.ServerStreamingServer[SendMessageResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SendMessagePessimistic not implemented")
 }
@@ -197,6 +235,9 @@ func (UnimplementedChannelServiceServer) ReceiveMessage(*ReceiveMessageRequest, 
 }
 func (UnimplementedChannelServiceServer) ReceiveMessageOptimistic(context.Context, *ReceiveMessageRequest) (*ReceiveMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReceiveMessageOptimistic not implemented")
+}
+func (UnimplementedChannelServiceServer) ReceiveMessagePessimistic(*ReceiveMessageRequest, grpc.ServerStreamingServer[ReceiveMessageResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method ReceiveMessagePessimistic not implemented")
 }
 func (UnimplementedChannelServiceServer) ReceiveMessageStream(grpc.BidiStreamingServer[ReceiveMessageRequest, ReceiveMessageResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method ReceiveMessageStream not implemented")
@@ -276,6 +317,24 @@ func _ChannelService_SendMessage_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChannelService_SendMessageOptimistic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChannelServiceServer).SendMessageOptimistic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChannelService_SendMessageOptimistic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChannelServiceServer).SendMessageOptimistic(ctx, req.(*SendMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ChannelService_SendMessagePessimistic_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SendMessageRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -323,6 +382,17 @@ func _ChannelService_ReceiveMessageOptimistic_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChannelService_ReceiveMessagePessimistic_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ReceiveMessageRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ChannelServiceServer).ReceiveMessagePessimistic(m, &grpc.GenericServerStream[ReceiveMessageRequest, ReceiveMessageResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ChannelService_ReceiveMessagePessimisticServer = grpc.ServerStreamingServer[ReceiveMessageResponse]
+
 func _ChannelService_ReceiveMessageStream_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(ChannelServiceServer).ReceiveMessageStream(&grpc.GenericServerStream[ReceiveMessageRequest, ReceiveMessageResponse]{ServerStream: stream})
 }
@@ -350,6 +420,10 @@ var ChannelService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChannelService_SendMessage_Handler,
 		},
 		{
+			MethodName: "SendMessageOptimistic",
+			Handler:    _ChannelService_SendMessageOptimistic_Handler,
+		},
+		{
 			MethodName: "ReceiveMessageOptimistic",
 			Handler:    _ChannelService_ReceiveMessageOptimistic_Handler,
 		},
@@ -369,6 +443,11 @@ var ChannelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ReceiveMessage",
 			Handler:       _ChannelService_ReceiveMessage_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ReceiveMessagePessimistic",
+			Handler:       _ChannelService_ReceiveMessagePessimistic_Handler,
 			ServerStreams: true,
 		},
 		{

@@ -18,6 +18,10 @@ func (s *Server) _rcvMsg(req *rpc.ReceiveMessageRequest) (string, error) {
 }
 
 func (s *Server) ReceiveMessage(req *rpc.ReceiveMessageRequest, svr grpc.ServerStreamingServer[rpc.ReceiveMessageResponse]) error {
+	return s.ReceiveMessagePessimistic(req, svr)
+}
+
+func (s *Server) ReceiveMessagePessimistic(req *rpc.ReceiveMessageRequest, svr grpc.ServerStreamingServer[rpc.ReceiveMessageResponse]) error {
 	msg, err := s._rcvMsg(req)
 	if err != nil {
 		return err

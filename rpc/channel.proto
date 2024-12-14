@@ -5,6 +5,8 @@ option go_package = "./rpc";
 message RegisterChannelRequest {
     string namespace = 1;
     int32 buf = 2;
+    int32 flags = 3; // flags
+    string data = 4;
 }
 
 message InfoRequest {
@@ -41,10 +43,12 @@ service ChannelService {
     rpc Info(InfoRequest) returns (InfoResponse);
     rpc RegisterChannel(RegisterChannelRequest) returns (RegisterChannelResponse);
     rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);                     // 乐观写
+    rpc SendMessageOptimistic(SendMessageRequest) returns (SendMessageResponse);           // 乐观写
     rpc SendMessagePessimistic(SendMessageRequest) returns (stream SendMessageResponse);   // 悲观写
     rpc SendMessageStream(stream SendMessageRequest) returns (stream SendMessageResponse); // 写入流
 
-    rpc ReceiveMessage(ReceiveMessageRequest) returns (stream ReceiveMessageResponse);              // 悲观读
+    rpc ReceiveMessage(ReceiveMessageRequest) returns (stream ReceiveMessageResponse);             // 悲观读
     rpc ReceiveMessageOptimistic(ReceiveMessageRequest) returns (ReceiveMessageResponse);          // 乐观读
-    rpc ReceiveMessageStream(stream ReceiveMessageRequest) returns (stream ReceiveMessageResponse); // 读取流
+    rpc ReceiveMessagePessimistic(ReceiveMessageRequest) returns (stream ReceiveMessageResponse);  // 悲观读
+    rpc ReceiveMessageStream(stream ReceiveMessageRequest) returns (stream ReceiveMessageResponse);// 读取流
 }
