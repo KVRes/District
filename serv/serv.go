@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/KVRes/District/exchange"
+	"github.com/KVRes/District/exchange/channels"
 	"github.com/KVRes/District/rpc"
 )
 
@@ -33,7 +34,7 @@ func (s *Server) Info(_ context.Context, req *rpc.InfoRequest) (*rpc.InfoRespons
 }
 
 func (s *Server) RegisterChannel(_ context.Context, req *rpc.RegisterChannelRequest) (*rpc.RegisterChannelResponse, error) {
-	meta := exchange.ChMeta{
+	meta := channels.Meta{
 		Buf:   int(req.GetBuf()),
 		Flags: req.GetFlags(),
 	}
